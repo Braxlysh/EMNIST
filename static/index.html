@@ -1,25 +1,157 @@
-<html>
+<!DOCTYPE html>
+<html lang="ru">
 <head>
-    <title>Sketchpad</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.2/jquery.min.js" integrity="sha512-tWHlutFnuG0C6nQRlpvrEhE4QpkG1nn2MOUMWmUeRePl4e3Aki0VB6W1v3oLjFtd0hVOtRQ9PHpSfN6u6/QXkQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script type="text/javascript" src="app.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letter Recognition</title>
+    <script defer src="app.js"></script>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eef2ff, #f8fafc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1f2937;
+        }
+
+        .card {
+            width: 420px;
+            max-width: calc(100vw - 32px);
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+            padding: 28px;
+        }
+
+        .title {
+            margin: 0 0 8px;
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .subtitle {
+            margin: 0 0 22px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 15px;
+        }
+
+        .canvas-wrap {
+            background: #f9fafb;
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
         #sketchpad {
-            border: 1px solid #888;
-            zoom: 100%;
+            width: 280px;
+            height: 280px;
+            border-radius: 16px;
+            background: white;
+            border: 1px solid #d1d5db;
+            cursor: crosshair;
+            display: block;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        button {
+            flex: 1;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .predict-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .predict-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .clear-btn {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .clear-btn:hover {
+            background: #d1d5db;
+        }
+
+        .result-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 40px;
+            font-weight: 700;
+            min-height: 48px;
+            color: #0f172a;
+        }
+
+        .hint {
+            margin-top: 16px;
+            font-size: 13px;
+            color: #94a3b8;
+            text-align: center;
         }
     </style>
 </head>
+<body>
+    <div class="card">
+        <h1 class="title">Draw a letter</h1>
+        <p class="subtitle">Нарисуй букву и нажми Predict</p>
 
-<body onload="init()">
-<H1>Draw image</H1>
-<div id="sketchpadapp">
-    <canvas id="sketchpad" height="28" width="28" style="width:140px;height:140px; display:block;"></canvas>
-    <button type="button" onclick="predictData()">Predict</button>
-    <button type="button" onclick="reset()">Clear</button>
-    <br>
-    <dict id="prediction"></div>
-</div>
+        <div class="canvas-wrap">
+            <canvas id="sketchpad" width="280" height="280"></canvas>
+        </div>
+
+        <div class="actions">
+            <button class="predict-btn" type="button" onclick="predictData()">Predict</button>
+            <button class="clear-btn" type="button" onclick="reset()">Clear</button>
+        </div>
+
+        <div class="result-box">
+            <div class="result-label">Prediction</div>
+            <div class="result-value" id="prediction">—</div>
+        </div>
+
+        <div class="hint">
+            Лучше рисовать символ крупно и по центру
+        </div>
+    </div>
 </body>
 </html>

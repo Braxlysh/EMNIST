@@ -1,105 +1,126 @@
-// Variables for referencing the canvas and 2dcanvas context
-var canvas, ctx;
+let canvas, ctx;
+let mouseDown = false;
+let lastX = 0, lastY = 0;
 
-// Variables to keep track of the mouse position and left-button status
-var mouseX, mouseY, mouseDown = 0;
+function init() {
+    canvas = document.getElementById('sketchpad');
+    ctx = canvas.getContext('2d');
 
-// Draws a dot at a specific position on the supplied canvas name
-// Parameters are: A canvas context, the x position, the y position, the size of the dot
-function drawDot(ctx, x, y) {
-  let pxData = ctx.getImageData(x, y, 28, 28);
-  pxData.data[0] = 0;
-  pxData.data[1] = 0;
-  pxData.data[2] = 0;
-  pxData.data[3] = 255;
-  ctx.putImageData(pxData, x, y);
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 26;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', stopDraw);
+
+    canvas.addEventListener('touchstart', startDrawTouch, { passive: false });
+    canvas.addEventListener('touchmove', drawTouch, { passive: false });
+    window.addEventListener('touchend', stopDraw);
 }
 
-// Clear the canvas context using the canvas width and height
-function clearCanvas(canvas, ctx) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+window.onload = init;
+
+function getMousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height)
+    };
 }
 
-// Keep track of the mouse button being pressed and draw a dot at current location
-function sketchpad_mouseDown() {
-  mouseDown = 1;
-  drawDot(ctx, mouseX / 5, mouseY / 5);
+function startDraw(e) {
+    mouseDown = true;
+    const pos = getMousePos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, ctx.lineWidth / 2, 0, Math.PI * 2);
+    ctx.fillStyle = 'black';
+    ctx.fill();
 }
 
-// Keep track of the mouse button being released
-function sketchpad_mouseUp() {
-  mouseDown = 0;
+function draw(e) {
+    if (!mouseDown) return;
+
+    const pos = getMousePos(e);
+
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+
+    lastX = pos.x;
+    lastY = pos.y;
 }
 
-// Keep track of the mouse position and draw a dot if mouse button is currently pressed
-function sketchpad_mouseMove(e) {
-  // Update the mouse co-ordinates when moved
-  getMousePos(e);
+function stopDraw() {
+    mouseDown = false;
+}
 
-  // Draw a dot if the mouse button is currently being pressed
-  if (mouseDown == 1) {
-    drawDot(ctx, mouseX / 5, mouseY / 5);
-  }
+function startDrawTouch(e) {
+    e.preventDefault();
+    startDraw(e.touches[0]);
+}
+
+function drawTouch(e) {
+    e.preventDefault();
+    draw(e.touches[0]);
 }
 
 function reset() {
-  clearCanvas(canvas, ctx);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('prediction').textContent = '—';
 }
 
-// Get the current mouse position relative to the top-left of the canvas
-function getMousePos(e) {
-  if (!e)
-    var e = event;
+async function predictData() {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = 28;
+    tempCanvas.height = 28;
+    const tempCtx = tempCanvas.getContext('2d');
 
-  if (e.offsetX) {
-    mouseX = e.offsetX;
-    mouseY = e.offsetY;
-  } else if (e.layerX) {
-    mouseX = e.layerX;
-    mouseY = e.layerY;
-  }
-}
+    tempCtx.fillStyle = 'white';
+    tempCtx.fillRect(0, 0, 28, 28);
+    tempCtx.drawImage(canvas, 0, 0, 28, 28);
 
-// Set-up the canvas and add our event handlers after the page has loaded
-function init() {
-  // Get the specific canvas element from the HTML document
-  canvas = document.getElementById('sketchpad');
+    const data = tempCtx.getImageData(0, 0, 28, 28);
+    let img = [];
 
-  // If the browser supports the canvas tag, get the 2d drawing context for this canvas
-  if (canvas.getContext) {
-    ctx = canvas.getContext('2d');
-    ctx.mozImageSmoothingEnabled = false;
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.msImageSmoothingEnabled = false;
-    ctx.imageSmoothingEnabled = false;
-  }
-
-  // Check that we have a valid context to draw on/with before adding event handlers
-  if (ctx) {
-    canvas.addEventListener('mousedown', sketchpad_mouseDown, false);
-    canvas.addEventListener('mousemove', sketchpad_mouseMove, false);
-    window.addEventListener('mouseup', sketchpad_mouseUp, false);
-  }
-}
-
-function predictData() {
-  // const normalarray = Array.prototype.slice.call(imgdata);
-  const data = ctx.getImageData(0,0,28,28);
-  var img = []
-  for(let i = 0; i < 28 * 28; i++) {
-    img.push(data.data[4 * i + 3]);
-  }
-  $.ajax({
-    url: "/api/predict",
-    type: "POST",
-    headers: {
-      "Accept": "application/json"
-    },
-    data: JSON.stringify(img),
-    processData: false,
-    success: (res, status) => {
-      console.log(res);
-      document.getElementById("prediction").innerHTML = res.prediction;
+    for (let i = 0; i < 28 * 28; i++) {
+        const r = data.data[4 * i];
+        const g = data.data[4 * i + 1];
+        const b = data.data[4 * i + 2];
+        const gray = Math.round((r + g + b) / 3);
+        img.push(255 - gray);
     }
-  });
+
+    try {
+        document.getElementById('prediction').textContent = '...';
+
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(img)
+        });
+
+        if (!response.ok) {
+            throw new Error('HTTP error ' + response.status);
+        }
+
+        const res = await response.json();
+        document.getElementById('prediction').textContent = res.prediction;
+    } catch (error) {
+        console.error(error);
+        document.getElementById('prediction').textContent = 'Error';
+    }
 }
