@@ -134,7 +134,7 @@ practice-cnn/
 ### Клонирование репозитория
 
 ```bash
-git clone <link/to/your/repo>
+git clone https://github.com/Braxlysh/EMNIST.git
 cd practice-cnn
 ```
 
@@ -237,52 +237,3 @@ Notebook содержит:
 Финальный checkpoint используется web-сервисом для inference.
 
 ---
-
-## 7. Подключение проекта к GitHub
-
-Если Git ещё не инициализирован:
-
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-```
-
-Создайте пустой репозиторий на GitHub, например `practice-cnn`, затем подключите его:
-
-```bash
-git remote add origin https://github.com/USERNAME/practice-cnn.git
-git branch -M main
-git push -u origin main
-```
-
-Для последующих изменений:
-
-```bash
-git add .
-git commit -m "Update project"
-git push
-```
-
-Перед первым коммитом рекомендуется проверить:
-
-```bash
-git status
-```
-
-В `.gitignore` желательно исключить:
-
-```gitignore
-.venv/
-__pycache__/
-*.pyc
-.ipynb_checkpoints/
-.vscode/
-.idea/
-data/
-models/
-.DS_Store
-Thumbs.db
-```
-
-Файл `model.ckpt` не следует добавлять в `.gitignore`, если он необходим для запуска сервиса сразу после клонирования репозитория.
