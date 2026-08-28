@@ -106,19 +106,19 @@ Checkpoint содержит:
 ## 2. Структура проекта
 
 ```text
-practice-cnn/
+EMNIST/
 │
 ├── data/                         # данные EMNIST
 ├── models/                       # checkpoints экспериментов
 ├── myapp/
 │   ├── model.py                  # архитектура и inference модели
-│   └── ...
+│   └── model.ckpt                # финальная обученная модель
+│   └── ....             
 │
 ├── static/
 │   ├── index.html                # web-интерфейс
 │   └── app.js                    # canvas и запросы к API
 │
-├── model.ckpt                    # финальная обученная модель
 ├── prepare_model.ipynb           # обучение и эксперименты
 ├── emnist-balanced-mapping.txt   # соответствие классов EMNIST
 ├── Dockerfile
